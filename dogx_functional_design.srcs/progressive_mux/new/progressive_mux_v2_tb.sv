@@ -2,6 +2,23 @@
 
 module progressive_mux_v2_tb;
 
+  /**
+    TESTBENCH FOR PROGRESSIVE MULTIPLEXER - RICARDO CARRRERO, 10/1/2025
+
+    Purpose:
+
+    Test the progressive multiplexer behavior
+
+    Usage:
+
+    Execute in vivado simulator, check the waveform output in vivado to check the behavior
+
+    Description:
+
+    The progressive combinator has two constant input values, and the sequence between the two can be observed when running the simulation
+
+**/
+
   logic clk;
   ClockGenerator #(.CLOCK_FREQ_MHZ(24)) cgen (.clk(clk));
 

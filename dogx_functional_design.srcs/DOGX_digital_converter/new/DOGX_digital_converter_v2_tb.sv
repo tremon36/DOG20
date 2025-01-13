@@ -2,6 +2,35 @@
 
 module DOGX_digital_converter_v2_tb;
 
+/**
+    TESTBENCH FOR DIGITAL CONVERTER - RICARDO CARRRERO, 10/1/2025
+
+    Purpose:
+
+    Test the full converter with specific programming values
+
+    Usage:
+
+    Execute in vivado simulator, then use plot_outputs.m to check the results in matlab
+    The results include channel combination and alpha values
+
+    Description:
+
+    An input wave is created, using a 4Hz carrier and a small 1KHz tone.
+    This wave is the input to system verilog oscillators with gain 1 and 0.25 respectively.
+    The osillators are gray sampled and extended, simulating the analog+fullcustom side of the converter.
+    The result of the previous is the two inputs to the HSNR and HDR channel respectively (both differential).
+    A DUT for the digital converter is created, with modifiable programming values (alpha block, filter usage, progressive alpha)
+    The results are saved to a csv file that can be read using matlab
+
+    notes:
+
+    Noise shaping is not expected to behave correctly in this simulation, because the oscillators are not precise enough.
+    Simulation is very long (1s). Might take an hour to complete
+
+
+**/
+
   real sineval_n = 0;
   real sineval_p = 0;
   real t_delay = 7;

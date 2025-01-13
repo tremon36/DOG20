@@ -2,6 +2,32 @@
 
 module datapath_one_clock_v3_tb;
 
+/**
+    TESTBENCH FOR DATAPATH (NOISE SHAPER) - RICARDO CARRRERO, 10/1/2025
+
+    Purpose:
+
+    Test the noise-shaper used in the converter
+
+    Usage:
+
+    Execute in vivado simulator, then use plot_outputs.m to check the results in matlab
+
+    Description:
+
+    An input sine wave is created. 
+    The sine wave is used as an input for two system verilog VCOs (not very precise ones, but fast to simulate)
+    The output of the oscillators is gray-sampled and extended, simulating the analog+fullcustom part of the converter
+    The previous is the input to the noise shaper
+    The output of the noise-shaper is saved to a csv file that can be read by matlab
+
+    notes:
+
+    Noise shaping is not expected to behave correctly in this simulation, because the oscillators are not precise enough
+
+
+**/
+
   real sineval_n = 0;
   real sineval_p = 0;
   real t_delay = 7;

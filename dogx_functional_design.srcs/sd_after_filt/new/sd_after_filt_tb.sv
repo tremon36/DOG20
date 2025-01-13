@@ -1,5 +1,24 @@
 module sd_after_filt_tb;
 
+  /**
+    TESTBENCH FOR SIGMA-DELTA MODULATOR (FIXED POINT PRECISION NOISE-SHAPING) - RICARDO CARRRERO, 10/1/2025
+
+    Purpose:
+
+    Test the sigma-delta modulator used to reduce number of bits of the outputs of the filters (33 bit) to the output of the converter (11 bit)
+
+    Usage:
+
+    Execute in vivado simulator, then use plot_outputs.m to view the results in matlab
+
+    Description:
+
+    A sine wave is created and second order sigma delta modulated, simulating the current waveform at the input of the sigma-delta under test
+    This is used as the input for the DUT
+    results are saved to a csv file that can be read by matlab, displaying time domain and fft results
+
+**/
+
   logic clk;
 
   ClockGenerator #(.CLOCK_FREQ_MHZ(24.576)) cgen (.clk(clk));
@@ -57,26 +76,26 @@ module sd_after_filt_tb;
   );
 
   int fd;
-initial begin
-    fd = $fopen("sd_out.csv","w");
-    if(!fd) begin
-        $display("FATAL: ERROR OPENING FILE");
-        $finish;
+  initial begin
+    fd = $fopen("sd_out.csv", "w");
+    if (!fd) begin
+      $display("FATAL: ERROR OPENING FILE");
+      $finish;
     end
-end
+  end
 
-initial begin
+  initial begin
     forever begin
-        @(posedge enable_3M);
-        @(negedge clk);
-        $fdisplay(fd,"%0d,%d",sine_quantized,$signed(sd_output));
+      @(posedge enable_3M);
+      @(negedge clk);
+      $fdisplay(fd, "%0d,%d", sine_quantized, $signed(sd_output));
     end
-end
+  end
 
-initial begin
-    repeat(24.576 * 1_000_000 * 0.25) @(posedge clk);
+  initial begin
+    repeat (24.576 * 1_000_000 * 0.25) @(posedge clk);
     $fclose(fd);
     $finish;
-end
+  end
 
 endmodule

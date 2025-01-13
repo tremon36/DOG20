@@ -2,6 +2,25 @@
 
 module serial_mul_v2_tb;
 
+/**
+    TESTBENCH FOR SERIAL MULTIPLIER - RICARDO CARRRERO, 13/1/2025
+
+    Purpose:
+
+    Test the serial multipler behavior
+
+    Usage:
+
+    Execute in vivado simulator, then check the output simout.txt.
+    Results marked as "NOT_WORKING, UNEXPECTED" mean erros
+
+    Description:
+
+    All input cases are tested for a 9 bit input (ending for loop)
+    Each result is saved into a txt file with the working or not working, expected or unexpected tags.
+
+**/
+
   // open file for results
   int fd;
   initial begin

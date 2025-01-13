@@ -2,6 +2,26 @@
 
 module channel_combinator_v2_tb;
 
+  /**
+    TESTBENCH FOR PROGRESSIVE ALPHA - RICARDO CARRRERO, 10/1/2025
+
+    Purpose:
+
+    Test the progressive combinator used for progressive alpha implementation
+
+    Usage:
+
+    Execute in vivado simulator, then use plot_outputs.m to check the results in matlab
+
+    Description:
+
+    Two sine waves are created with different offset and amplitudes, but same frequency
+    A progressive combinator dut uses the previous as input
+    A selection signal is switched arbitrarly between 0 and 1, enabling the visualization of the progressive combination
+    Results are saved to a csv file that can be read by matlab
+
+**/
+
   // open file for results
 
   int fd;

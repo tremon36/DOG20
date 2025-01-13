@@ -2,6 +2,27 @@
 
 module programmer_v2_tb;
 
+ /**
+    TESTBENCH FOR PROGRAMMER - RICARDO CARRRERO, 13/1/2025
+
+    Purpose:
+
+    Test the correct behavior of the programming module interfacing with the exterior of the chip
+
+    Usage:
+
+    Generate an array of bits used for programming using the programming software. An example is given at line 59
+    Run the testbench
+    Check the results agains the values of the registers in the programming software
+
+    Description:
+
+    An array of programming bits extracted from the programming software is used as the input data for the programming module
+    The index used for the current input data value (SDI) is updated every SCLK cycle, simulating a real input
+    The array of programming bits is inverted and the same procedure is repeated again, to double check the behavior
+
+**/
+
   // First generate clock and reset
 
   logic clk;

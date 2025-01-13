@@ -2,6 +2,23 @@
 
 module alpha_block_v2_tb;
 
+/**
+    TESTBENCH FOR ALPHA BLOCK - RICARDO CARRRERO, 10/1/2025
+
+    Purpose:
+
+    Test the alpha block logic for channel switching decision
+
+    Usage:
+
+    Execute in vivado simulator and check that the results are correct in the simulator itself
+
+    Description:
+
+    A task for different input values is created (Channel value, threshold, etc), making it possible to check the correct behavior of timeout and thresholds.
+
+**/
+
   // Clock and reset
   logic clk;
   logic reset;

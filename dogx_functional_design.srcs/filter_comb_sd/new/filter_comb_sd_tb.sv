@@ -2,6 +2,30 @@
 
 module filter_comb_sd_tb;
 
+/**
+    TESTBENCH FOR SIGMA-DELTA COMBINATION AFTER FILTER - RICARDO CARRRERO, 10/1/2025
+
+    Purpose:
+
+    Test the combination of the two signals after the filters, switching at the input of the sigma-delta modulator (DUT)
+    Before, we used two SD, one for each filter, and performed the combination afterwards
+
+    Usage:
+
+    Execute in vivado simulator, then use plot_outputs.m to view the results in matlab
+
+    Description:
+
+    Two sine waves are created and sigma-delta modulated. The second one is the first one with x4 amplitude.
+    The idea is to not depend on the rest of the converter for this test, thus the sine waves are equivalent to the oscillator + NS
+    These waves filtered using the DC filter present in the converter.
+    The gain is adjusted digitally for both of them to be suitable for combination
+    A combination is performed, simulating alpha behavior. This part of the code is easy to change for different testing putposes
+    The mixed signal is fed to the sigma-delta modulator DUT
+    The relevant outputs are written to a csv file that can be read by matlab
+
+**/
+
 logic clk;
 
 ClockGenerator #(.CLOCK_FREQ_MHZ(24.576)) cgen (.clk(clk));
