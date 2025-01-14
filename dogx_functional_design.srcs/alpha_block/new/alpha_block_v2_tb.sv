@@ -28,7 +28,7 @@ module alpha_block_v2_tb;
   logic [8:0] threshold_high;
   logic [8:0] threshold_low;
   logic [4:0] timeout_mask;
-  logic enable_sampling_3M;
+  logic enable_3M;
 
   // Output from DUT
   wire alpha;
@@ -36,7 +36,7 @@ module alpha_block_v2_tb;
   // Instantiate DUT
   alpha_block_v2 dut (
     .clk(clk),
-    .enable_sampling(enable_sampling_3M),
+    .enable_sampling(enable_3M),
     .reset(reset),
     .hdr_current_value(hdr_current_value),
     .threshold_high(threshold_high),
@@ -53,7 +53,7 @@ module alpha_block_v2_tb;
   int count = 0;
   always begin
     @(posedge clk);
-    enable_sampling_3M = count == 0;
+    enable_3M = count == 0;
     count = count + 1;
     if (count == 8) count = 0;
   end

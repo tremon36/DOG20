@@ -57,7 +57,7 @@ module datapath_one_clock_v3_tb;
   logic CLK_24M;
   logic CLK_3M;
   logic reset;
-  logic enable_sampling_3M;
+  logic enable_3M;
 
   initial begin
     CLK_24M = 1;
@@ -77,7 +77,7 @@ module datapath_one_clock_v3_tb;
 
   always begin
     @(posedge CLK_24M);
-    enable_sampling_3M = count == 0;
+    enable_3M = count == 0;
     count = count + 1;
     if (count == 8) count = 0;
   end
@@ -165,7 +165,7 @@ module datapath_one_clock_v3_tb;
       .N_BITS_ACC_EXT(3)
   ) dut (
       .CLK_24M(CLK_24M),
-      .enable_sampling_3M(enable_sampling_3M),
+      .enable_3M(enable_3M),
       .reset(reset),
       .counter_p(counter_p),
       .counter_n(counter_n),
@@ -174,7 +174,7 @@ module datapath_one_clock_v3_tb;
 
   // Save data to file
 
-  always_ff @(posedge enable_sampling_3M) begin
+  always_ff @(posedge enable_3M) begin
     $fdisplay(fd, "%d", $signed(output_data));
   end
 

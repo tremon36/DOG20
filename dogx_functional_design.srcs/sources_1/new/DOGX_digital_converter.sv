@@ -19,12 +19,12 @@ module DOGX_digital_converter (
 
   // Clock gate enable generation
 
-  logic enable_sampling_3M;
+  logic enable_3M;
 
   clockgen cg_enable_generator (
       .CLK_24M(CLK_24M),
       .reset(reset),
-      .enable_sampling_3M(enable_sampling_3M)
+      .enable_3M(enable_3M)
   );
 
   // HDR and HSNR channels
@@ -41,7 +41,7 @@ module DOGX_digital_converter (
   datapath_one_clock #(
       .N_BITS_ACC_EXT(3)
   ) HSNR_datapath (
-      .enable_sampling_3M(enable_sampling_3M),
+      .enable_3M(enable_3M),
       .CLK_24M(CLK_24M),
       .reset(reset),
       .counter_p(counter_HSNR_p),
@@ -52,7 +52,7 @@ module DOGX_digital_converter (
   datapath_one_clock #(
       .N_BITS_ACC_EXT(3)
   ) HDR_datapath (
-      .enable_sampling_3M(enable_sampling_3M),
+      .enable_3M(enable_3M),
       .CLK_24M(CLK_24M),
       .reset(reset),
       .counter_p(counter_HDR_p),
@@ -68,7 +68,7 @@ module DOGX_digital_converter (
   dc_filter filter_HSNR (
       .reset(reset),
       .CLK_24M(CLK_24M),
-      .enable_3M(enable_sampling_3M && use_dc_filter),
+      .enable_3M(enable_3M),
       .c_data(HSNR_ns_output),
       .filter_out(HSNR_filter_output)
   );
@@ -76,7 +76,7 @@ module DOGX_digital_converter (
   dc_filter filter_HDR (
       .reset(reset),
       .CLK_24M(CLK_24M),
-      .enable_3M(enable_sampling_3M && use_dc_filter),
+      .enable_3M(enable_3M),
       .c_data(HDR_ns_output),
       .filter_out(HDR_filter_output)
   );
@@ -99,16 +99,16 @@ module DOGX_digital_converter (
   logic alpha_internal;
   assign alpha_out = alpha_internal;
 
-  logic [10:0] alpha_channel_input;
+  logic [8:0] alpha_channel_input;
 
   always_comb begin
-    if(use_dc_filter) alpha_channel_input = HDR_filter_output[31:21]; // MSBs
+    if(use_dc_filter) alpha_channel_input = HDR_filter_output[31:23]; // MSBs
     else alpha_channel_input = HDR_output;
   end
 
   alpha_block_v2 alpha_gen (
       .clk(CLK_24M),
-      .enable_sampling(enable_sampling_3M),
+      .enable_sampling(enable_3M),
       .reset(reset),
       .hdr_current_value(alpha_channel_input),
       .threshold_high(alpha_th_high),
@@ -133,7 +133,7 @@ module DOGX_digital_converter (
   channel_combinator progressive_combinator (
       .reset(reset),
       .clk(CLK_24M),
-      .enable_3M(enable_sampling_3M),
+      .enable_3M(enable_3M),
       .select(alpha_in),
       .data_c1(HSNR_output_extended),
       .data_c2(HDR_output_extended),
@@ -150,7 +150,7 @@ module DOGX_digital_converter (
     if (!reset) begin
       converter_output_internal_unfiltered <= 0;
     end else begin
-      if (enable_sampling_3M) begin
+      if (enable_3M) begin
         if (use_progressive_alpha) begin
           converter_output_internal_unfiltered <= p_comb_output;
         end else begin
@@ -192,7 +192,7 @@ module DOGX_digital_converter (
   sigma_delta_trunc sd_after_filt (
     .reset(reset),
     .clk(CLK_24M),
-    .enable_3M(enable_sampling_3M),
+    .enable_3M(enable_3M),
     .input_23_decimals_10_integer(mixed_output_before_filter),
     .output_10_integer(converter_output_internal_filtered)
 );

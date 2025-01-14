@@ -4,7 +4,7 @@ module datapath_one_clock #(
     parameter int N_BITS_ACC_EXT = 3
 ) (
     input wire CLK_24M,
-    input wire enable_sampling_3M,
+    input wire enable_3M,
     input wire reset,
     input wire [8:0] counter_p,
     input wire [8:0] counter_n,
@@ -29,7 +29,7 @@ module datapath_one_clock #(
       output_value_delayed <= 0;
     end else begin
       acc_value <= $signed(acc_value) + $signed(input_data - output_value);
-      if (enable_sampling_3M) begin
+      if (enable_3M) begin
         output_value <= acc_value[(N_BITS_ACC_EXT+8):N_BITS_ACC_EXT];
         output_value_delayed <= output_value;
       end

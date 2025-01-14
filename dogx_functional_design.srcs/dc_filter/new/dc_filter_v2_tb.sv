@@ -2,6 +2,25 @@
 
 module dc_filter_v2_tb;
 
+  /**
+    TESTBENCH FOR DC FILTER - RICARDO CARRRERO, 13/1/2025
+
+    Purpose:
+
+    Test the DC filter after noise-shaper, to get rid of low frequency noise and DC offset
+
+    Usage:
+
+    Execute in vivado simulator, then run plot_outputs.m in matlab to view the results
+
+    Description:
+
+    A second order sigma-delta modulated sine wave is generated, which has offset.
+    This signal is used as an input for DC filter.
+    The input and output of the filter are saved to a csv file that can be read by matlab
+
+**/
+
 logic clk;
 
 ClockGenerator #(.CLOCK_FREQ_MHZ(24.576)) cgen (.clk(clk));
