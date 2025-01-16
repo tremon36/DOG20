@@ -2,7 +2,7 @@
 
 module programmer_v2_tb;
 
- /**
+  /**
     TESTBENCH FOR PROGRAMMER - RICARDO CARRRERO, 13/1/2025
 
     Purpose:
@@ -18,8 +18,9 @@ module programmer_v2_tb;
     Description:
 
     An array of programming bits extracted from the programming software is used as the input data for the programming module
-    The index used for the current input data value (SDI) is updated every SCLK cycle, simulating a real input
-    The array of programming bits is inverted and the same procedure is repeated again, to double check the behavior
+    The index used for the current input data value (SDI) is updated every SCLK cycle, simulating a real input.
+    There are two variables (SDI_override,SCLK_override) that allow the testbench to override continuous assignments to test High Ohmic and digital reset
+    The array of programming bits changed for double testing and sent again
 
 **/
 
@@ -55,45 +56,93 @@ module programmer_v2_tb;
   // [5, 189, 217, 218, 179, 33, 161, 165] where 3 is the first number to be sent
 
 
-  logic [63:0] data_to_sent;
+  logic [55:0] data_to_send;
 
   initial begin
-    data_to_sent = {8'd2, 8'd170, 8'd170, 8'd218, 8'd85, 8'd85, 8'd85, 8'd85};
+    data_to_send = {8'd3, 8'd219, 8'd90, 8'd108, 8'd136, 8'd137, 8'd217};
   end
 
   // Generate Chip select and SDI according to SCLK
 
   logic chip_select;
   logic SDI;
+  logic SCLK;
 
-  int i = 63;
-  assign SDI = data_to_sent[i];
+  logic SCLK_override;  // Used to override SCLK assignment to "clk input if CS"
+  logic SDI_override;  // Used to override SCLK assignment to "clk input if CS"
+
+  int   i = 55;
+
+  always begin
+    if (!SDI_override) SDI = data_to_send[i];
+    if (!SCLK_override) SCLK = clk;
+    #1;
+  end
 
   initial begin
 
-    chip_select = 1;
+    SDI_override  = 0;
+    SCLK_override = 0;
+
+    chip_select   = 1;
     repeat (10) #CLK_PERIOD;  // wait for some time before enabling CS;
     chip_select = 0;
     repeat (2) #CLK_PERIOD;
     clock_enabled = 1;
-    repeat (64) @(posedge clk);
-    #1;
+
+    repeat (55) begin
+      @(negedge clk);
+      i = i - 1;
+    end
+
+    #CLK_PERIOD;
+    #CLK_PERIOD;
+
     clock_enabled = 0;
+    SDI_override = 1;
+    SCLK_override = 1;
+    SDI = 0;
+    SCLK = 0;
+
     repeat (2) #CLK_PERIOD;
     chip_select = 1;
     repeat (30) #CLK_PERIOD;
 
-    // Now invert the data to send, and run a new one
+    // Check for DRESET and HO
 
-    data_to_sent = {8'd5, 8'd189, 8'd217, 8'd218, 8'd179, 8'd33, 8'd161, 8'd165};
+
+    SDI = 1;
+    repeat (10) #CLK_PERIOD;
+    SCLK = 1;
+    repeat (10) #CLK_PERIOD;
+    SCLK = 0;
+    repeat (10) #CLK_PERIOD;
+    SDI = 0;
+
+    SDI_override = 0;
+    SCLK_override = 0;
+
+
+
+    // Test with new data
+
+    data_to_send = {8'd1, 8'd183, 8'd163, 8'd45, 8'd6, 8'd14, 8'd162};
+    i = 55;
+
     chip_select = 1;
     repeat (10) #CLK_PERIOD;  // wait for some time before enabling CS;
     chip_select = 0;
     repeat (2) #CLK_PERIOD;
     clock_enabled = 1;
-    repeat (64) @(posedge clk);
-    #1;
+
+    repeat (55) begin
+      @(negedge clk);
+      i = i - 1;
+    end
+
+    #CLK_PERIOD;
     clock_enabled = 0;
+
     repeat (2) #CLK_PERIOD;
     chip_select = 1;
     repeat (30) #CLK_PERIOD;
@@ -101,59 +150,74 @@ module programmer_v2_tb;
     $stop;
   end
 
-  
-  
-
-  always_ff @(posedge clk) begin
-    i <= i - 1;
-  end
-
   // NOW programmer DUT
 
-  logic [7:0] GTHDR;
-  logic [7:0] GTHSNR;
-  logic [3:0] FCHSNR;
-  logic HSNR_EN;
-  logic HDR_EN;
-  logic BG_PROG_EN;
-  logic [3:0] BG_PROG;
-  logic LDOA_BP;
-  logic LDOD_BP;
-  logic LDOD_mode_1V;
-  logic LDOA_tweak;
+  logic [3:0] GTHDR_encoded;
+  logic [3:0] GTHSNR_encoded;
+
   logic [8:0] ATHHI;
   logic [8:0] ATHLO;
   logic [4:0] ATO;
-  logic PALPHA;
-  logic DCFILT;
-  logic REF_OUT;
-  logic digital_RESET;
-  logic HO;
+
+  logic       DRESET;
+  logic       PALPHA;
+  logic       DCFILT;
+  logic       DLLFILT;
+  logic       DLL_EN;
+  logic       DLL_FB_EN;
+  logic       DLL_TR;
+
+  logic [3:0] FCHSNR;
+  logic       HSNR_EN;
+  logic       HDR_EN;
+  logic       BG_PROG_EN;
+  logic [3:0] BG_PROG;
+  logic       LDOA_BP;
+  logic       LDOA_tweak;
+  logic       REF_OUT;
+  logic       HO;
 
   programmer DUT (
-      .reset       (reset),
-      .SDI         (SDI),
-      .SCLK        (clk),
-      .CS          (chip_select),
-      .GTHDR       (GTHDR),
-      .GTHSNR      (GTHSNR),
-      .FCHSNR      (FCHSNR),
-      .HSNR_EN     (HSNR_EN),
-      .HDR_EN      (HDR_EN),
-      .BG_PROG_EN  (BG_PROG_EN),
-      .BG_PROG     (BG_PROG),
-      .LDOA_BP     (LDOA_BP),
-      .LDOD_BP     (LDOD_BP),
-      .LDOD_mode_1V(LDOD_mode_1V),
-      .LDOA_tweak  (LDOA_tweak),
-      .ATHHI       (ATHHI),
-      .ATHLO       (ATHLO),
-      .ATO         (ATO),
-      .PALPHA      (PALPHA),
-      .DCFILT      (DCFILT),
-      .REF_OUT     (REF_OUT),
-      .DRESET      (digital_RESET),
-      .HO          (HO)
+      .reset(reset),
+      .SDI(SDI),
+      .SCLK(SCLK),
+      .CS(chip_select),
+      .GTHDR(GTHDR_encoded),
+      .GTHSNR(GTHSNR_encoded),
+      .FCHSNR(FCHSNR),
+      .HSNR_EN(HSNR_EN),
+      .HDR_EN(HDR_EN),
+      .BG_PROG_EN(BG_PROG_EN),
+      .BG_PROG(BG_PROG),
+      .LDOA_BP(LDOA_BP),
+      .LDOA_tweak(LDOA_tweak),
+      .ATHHI(ATHHI),
+      .ATHLO(ATHLO),
+      .ATO(ATO),
+      .REF_OUT(REF_OUT),
+      .PALPHA(PALPHA),
+      .DCFILT(DCFILT),
+      .DLLFILT(DLLFILT),
+      .DLL_EN(DLL_EN),
+      .DLL_FB_EN(DLL_FB_EN),
+      .DLL_TR(DLL_TR),
+      .DRESET(DRESET),
+      .HO(HO)
+  );
+
+  // Add decoder for resistors
+
+  logic [7:0] GTHDR;
+  logic [7:0] GTHSNR;
+
+  resistors_decoder HDR_r_decoder_DUT (
+      .r_prog(GTHDR_encoded),
+      .R_ctr (GTHDR)
+  );
+
+  resistors_decoder HSNR_r_decoder_DUT (
+      .r_prog(GTHSNR_encoded),
+      .R_ctr (GTHSNR)
   );
 
 endmodule

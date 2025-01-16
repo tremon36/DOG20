@@ -24,8 +24,6 @@ module DOGX_TOP (
     output logic       BG_PROG_EN,
     output logic [3:0] BG_PROG,
     output logic       LDOA_BP,
-    output logic       LDOD_BP,
-    output logic       LDOD_mode_1V,
     output logic       LDOA_tweak,
     output logic       REF_OUT,
     output logic       HO,
@@ -36,38 +34,60 @@ module DOGX_TOP (
 
   // Programmer
 
+  logic [3:0] GTHDR_encoded;
+  logic [3:0] GTHSNR_encoded;
+
   logic [8:0] ATHHI;
   logic [8:0] ATHLO;
   logic [4:0] ATO;
+
   logic DRESET;
   logic PALPHA;
   logic DCFILT;
+  logic DLLFILT;
+  logic DLL_EN;
+  logic DLL_FB_EN;
+  logic DLL_TR;
 
 
   programmer DOGX_programmer (
-      .reset(reset),
-      .SDI(SDI),
-      .SCLK(SCLK),
-      .CS(CS),
-      .GTHDR(GTHDR),
-      .GTHSNR(GTHSNR),
-      .FCHSNR(FCHSNR),
-      .HSNR_EN(HSNR_EN),
-      .HDR_EN(HDR_EN),
-      .BG_PROG_EN(BG_PROG_EN),
-      .BG_PROG(BG_PROG),
-      .LDOA_BP(LDOA_BP),
-      .LDOD_BP(LDOD_BP),
-      .LDOD_mode_1V(LDOD_mode_1V),
-      .LDOA_tweak(LDOA_tweak),
-      .ATHHI(ATHHI),
-      .ATHLO(ATHLO),
-      .ATO(ATO),
-      .PALPHA(PALPHA),
-      .DCFILT(DCFILT),
-      .REF_OUT(REF_OUT),
-      .DRESET(DRESET),
-      .HO(HO)
+    .reset(reset),
+    .SDI(SDI),
+    .SCLK(SCLK),
+    .CS(CS),
+    .GTHDR(GTHDR_encoded),
+    .GTHSNR(GTHSNR_encoded),
+    .FCHSNR(FCHSNR),
+    .HSNR_EN(HSNR_EN),
+    .HDR_EN(HDR_EN),
+    .BG_PROG_EN(BG_PROG_EN),
+    .BG_PROG(BG_PROG),
+    .LDOA_BP(LDOA_BP),
+    .LDOA_tweak(LDOA_tweak),
+    .ATHHI(ATHHI),
+    .ATHLO(ATHLO),
+    .ATO(ATO),
+    .REF_OUT(REF_OUT),
+    .PALPHA(PALPHA),
+    .DCFILT(DCFILT),
+    .DLLFILT(DLLFILT),
+    .DLL_EN(DLL_EN),
+    .DLL_FB_EN(DLL_FB_EN),
+    .DLL_TR(DLL_TR),
+    .DRESET(DRESET),
+    .HO(HO)
+  );
+
+  // Resistors decoder
+
+  resistors_decoder HDR_r_decoder (
+    .r_prog(GTHDR_encoded),
+    .R_ctr(GTHDR)
+  );
+
+  resistors_decoder HSNR_r_decoder (
+    .r_prog(GTHSNR_encoded),
+    .R_ctr(GTHSNR)
   );
 
 
