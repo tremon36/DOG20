@@ -16,7 +16,7 @@ module DOGX_TOP (
     input  wire  alpha_in,  // Alpha out and in
     output logic alpha_out,
 
-    output logic [7:0] GTHDR,         // Programming bits for analog side
+    output logic [7:0] GTHDR,       // Programming bits for analog side
     output logic [7:0] GTHSNR,
     output logic [3:0] FCHSNR,
     output logic       HSNR_EN,
@@ -26,6 +26,11 @@ module DOGX_TOP (
     output logic       LDOA_BP,
     output logic       LDOA_tweak,
     output logic       REF_OUT,
+    output logic       DCFILT,
+    output logic       DLLFILT,
+    output logic       DLL_EN,
+    output logic       DLL_FB_EN,
+    output logic       DLL_TR,
     output logic       HO,
 
     output logic [10:0] converter_output  // Digital output
@@ -43,72 +48,68 @@ module DOGX_TOP (
 
   logic DRESET;
   logic PALPHA;
-  logic DCFILT;
-  logic DLLFILT;
-  logic DLL_EN;
-  logic DLL_FB_EN;
-  logic DLL_TR;
+
 
 
   programmer DOGX_programmer (
-    .reset(reset),
-    .SDI(SDI),
-    .SCLK(SCLK),
-    .CS(CS),
-    .GTHDR(GTHDR_encoded),
-    .GTHSNR(GTHSNR_encoded),
-    .FCHSNR(FCHSNR),
-    .HSNR_EN(HSNR_EN),
-    .HDR_EN(HDR_EN),
-    .BG_PROG_EN(BG_PROG_EN),
-    .BG_PROG(BG_PROG),
-    .LDOA_BP(LDOA_BP),
-    .LDOA_tweak(LDOA_tweak),
-    .ATHHI(ATHHI),
-    .ATHLO(ATHLO),
-    .ATO(ATO),
-    .REF_OUT(REF_OUT),
-    .PALPHA(PALPHA),
-    .DCFILT(DCFILT),
-    .DLLFILT(DLLFILT),
-    .DLL_EN(DLL_EN),
-    .DLL_FB_EN(DLL_FB_EN),
-    .DLL_TR(DLL_TR),
-    .DRESET(DRESET),
-    .HO(HO)
+      .reset(reset),
+      .SDI(SDI),
+      .SCLK(SCLK),
+      .CS(CS),
+      .GTHDR(GTHDR_encoded),
+      .GTHSNR(GTHSNR_encoded),
+      .FCHSNR(FCHSNR),
+      .HSNR_EN(HSNR_EN),
+      .HDR_EN(HDR_EN),
+      .BG_PROG_EN(BG_PROG_EN),
+      .BG_PROG(BG_PROG),
+      .LDOA_BP(LDOA_BP),
+      .LDOA_tweak(LDOA_tweak),
+      .ATHHI(ATHHI),
+      .ATHLO(ATHLO),
+      .ATO(ATO),
+      .REF_OUT(REF_OUT),
+      .PALPHA(PALPHA),
+      .DCFILT(DCFILT),
+      .DLLFILT(DLLFILT),
+      .DLL_EN(DLL_EN),
+      .DLL_FB_EN(DLL_FB_EN),
+      .DLL_TR(DLL_TR),
+      .DRESET(DRESET),
+      .HO(HO)
   );
 
   // Resistors decoder
 
   resistors_decoder HDR_r_decoder (
-    .r_prog(GTHDR_encoded),
-    .R_ctr(GTHDR)
+      .r_prog(GTHDR_encoded),
+      .R_ctr (GTHDR)
   );
 
   resistors_decoder HSNR_r_decoder (
-    .r_prog(GTHSNR_encoded),
-    .R_ctr(GTHSNR)
+      .r_prog(GTHSNR_encoded),
+      .R_ctr (GTHSNR)
   );
 
 
   // Converter
 
   DOGX_digital_converter DOGX_converter (
-    .CLK_24M(CLK_24M),
-    .reset(DRESET),
-    .counter_HSNR_p(counter_HSNR_p),
-    .counter_HSNR_n(counter_HSNR_n),
-    .counter_HDR_p(counter_HDR_p),
-    .counter_HDR_n(counter_HDR_n),
-    .alpha_th_high(ATHHI),
-    .alpha_th_low(ATHLO),
-    .alpha_timeout_mask(ATO),
-    .alpha_in(alpha_in),
-    .alpha_out(alpha_out),
-    .use_progressive_alpha(PALPHA),
-    .use_dc_filter(DCFILT),
-    .converter_output(converter_output)
-);
+      .CLK_24M(CLK_24M),
+      .reset(DRESET),
+      .counter_HSNR_p(counter_HSNR_p),
+      .counter_HSNR_n(counter_HSNR_n),
+      .counter_HDR_p(counter_HDR_p),
+      .counter_HDR_n(counter_HDR_n),
+      .alpha_th_high(ATHHI),
+      .alpha_th_low(ATHLO),
+      .alpha_timeout_mask(ATO),
+      .alpha_in(alpha_in),
+      .alpha_out(alpha_out),
+      .use_progressive_alpha(PALPHA),
+      .use_dc_filter(DCFILT),
+      .converter_output(converter_output)
+  );
 
 
 
