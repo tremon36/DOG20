@@ -326,7 +326,6 @@ module DOGX_TOP_tb;
   logic LDOA_BP;
   logic LDOA_tweak;
   logic REF_OUT;
-  logic DCFILT;
   logic DLLFILT;
   logic DLL_EN;
   logic DLL_FB_EN;
@@ -363,7 +362,6 @@ module DOGX_TOP_tb;
       .LDOA_BP   (LDOA_BP),
       .LDOA_tweak(LDOA_tweak),
       .REF_OUT   (REF_OUT),
-      .DCFILT    (DCFILT),
       .DLLFILT   (DLLFILT),
       .DLL_EN    (DLL_EN),
       .DLL_FB_EN (DLL_FB_EN),

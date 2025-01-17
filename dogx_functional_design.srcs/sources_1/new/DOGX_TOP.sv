@@ -26,7 +26,6 @@ module DOGX_TOP (
     output logic       LDOA_BP,
     output logic       LDOA_tweak,
     output logic       REF_OUT,
-    output logic       DCFILT,
     output logic       DLLFILT,
     output logic       DLL_EN,
     output logic       DLL_FB_EN,
@@ -48,8 +47,7 @@ module DOGX_TOP (
 
   logic DRESET;
   logic PALPHA;
-
-
+  logic DCFILT,
 
   programmer DOGX_programmer (
       .reset(reset),
