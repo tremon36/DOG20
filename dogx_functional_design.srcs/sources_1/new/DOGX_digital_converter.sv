@@ -86,15 +86,15 @@ module DOGX_digital_converter (
 
   always_comb begin
 
-      HSNR_output_filtered = HSNR_filter_output;
-      HDR_output_filtered  = HDR_filter_output;
+    HSNR_output_filtered = HSNR_filter_output;
+    HDR_output_filtered = HDR_filter_output;
 
-      HSNR_output = HSNR_ns_output;
-      HDR_output  = HDR_ns_output;
+    HSNR_output = HSNR_ns_output;
+    HDR_output = HDR_ns_output;
 
   end
 
-  // Now alpha logic
+  // ALPHA LOGIC (ALPHA GENERATION)
 
   logic alpha_internal;
   assign alpha_out = alpha_internal;
@@ -102,7 +102,7 @@ module DOGX_digital_converter (
   logic [8:0] alpha_channel_input;
 
   always_comb begin
-    if(use_dc_filter) alpha_channel_input = HDR_filter_output[31:23]; // MSBs
+    if (use_dc_filter) alpha_channel_input = HDR_filter_output[31:23];  // MSBs
     else alpha_channel_input = HDR_output;
   end
 
@@ -117,18 +117,26 @@ module DOGX_digital_converter (
       .alpha(alpha_internal)
   );
 
+  // --------------------------------------------------------------------------------------------------------------
 
+  // Generate converter output in different modes
 
-  // Generate converter output (no filter + progressive alpha)
+  // MODE 1: USE PROGRESSIVE ALPHA AND NO FILTER
+  // This mode can't use the DC filter.
 
-  // Gain compensation
+  // --------------------------------------------------------------------------------------------------------------
 
   always_comb begin
     HSNR_output_extended = {{2{HSNR_output[8]}}, HSNR_output};
     HDR_output_extended  = {HDR_output, 2'b00};
   end
 
-  logic [10:0] p_comb_output;
+  // The output of the progressive combinator is combinational (changes in the process of multiplication)
+  // Although viable, since the output is 3MHz, might cause a lot of activity in the output buffers. Therefore,
+  // It is registered before output
+
+  logic [10:0] p_comb_output_combinational;
+  logic [10:0] p_comb_output_registered;
 
   channel_combinator progressive_combinator (
       .reset(reset),
@@ -137,41 +145,44 @@ module DOGX_digital_converter (
       .select(alpha_in),
       .data_c1(HSNR_output_extended),
       .data_c2(HDR_output_extended),
-      .data_output(p_comb_output)
+      .data_output(p_comb_output_combinational)
   );
 
-  // Generate converter output with alpha. Use progressive alpha only if selected
-
-  logic [10:0] converter_output_internal_unfiltered;
-
-  // Converter output is here. Only use progressive alpha if selected
-
   always_ff @(posedge CLK_24M or negedge reset) begin
-    if (!reset) begin
-      converter_output_internal_unfiltered <= 0;
-    end else begin
-      if (enable_3M) begin
-        if (use_progressive_alpha) begin
-          converter_output_internal_unfiltered <= p_comb_output;
-        end else begin
-          if (alpha_in) begin
-            converter_output_internal_unfiltered <= HDR_output_extended;
-          end else begin
-            converter_output_internal_unfiltered <= HSNR_output_extended;
-          end
-        end
+    if (!reset) p_comb_output_registered <= 0;
+    else begin
+      if (enable_3M && use_progressive_alpha) begin // And in enables is allowed
+        p_comb_output_registered <= p_comb_output_combinational;
       end
     end
   end
 
+  logic [10:0] converter_output_internal_unfiltered; // Output for MODE 1. Assigned based on use progressive alpha below
 
+  always_comb begin
+    if (use_progressive_alpha) begin
+      converter_output_internal_unfiltered = p_comb_output_registered;
+    end else begin
+      if (alpha_in) begin
+        converter_output_internal_unfiltered = HDR_output_extended; // Only unregistered output to allow for DDR mode
+      end else begin
+        converter_output_internal_unfiltered = HSNR_output_extended;
+      end
+    end
+  end
 
-  // Generate converter output (FILTER + no progressive alpha)
+  // --------------------------------------------------------------------------------------------------------------
+
+  // MODE 2: USE DC FILTER
+  // This mode selects before to enable the DC filter
+  // The filters are above, this part of the code just combines the otputs of the filters and uses the final SD
+
+  // --------------------------------------------------------------------------------------------------------------
 
   logic signed [33:0] HSNR_output_extended_f;
   logic signed [33:0] HDR_output_extended_f;
   logic signed [33:0] mixed_output_before_filter;
-  logic [10:0] converter_output_internal_filtered;
+  logic [10:0] converter_output_internal_filtered;  // Output for MODE 2
 
   // gain compensation
 
@@ -183,31 +194,44 @@ module DOGX_digital_converter (
   // Perform combination after filters
 
   always_comb begin
-    if(alpha_in) mixed_output_before_filter = HDR_output_extended_f;
+    if (alpha_in) mixed_output_before_filter = HDR_output_extended_f;
     else mixed_output_before_filter = HSNR_output_extended_f;
   end
 
   // Use sigma-delta
 
+  logic [10:0] sd_after_filt_output;
   sigma_delta_trunc sd_after_filt (
-    .reset(reset),
-    .clk(CLK_24M),
-    .enable_3M(enable_3M),
-    .input_23_decimals_10_integer(mixed_output_before_filter),
-    .output_10_integer(converter_output_internal_filtered)
-);
+      .reset(reset),
+      .clk(CLK_24M),
+      .enable_3M(enable_3M),
+      .input_23_decimals_10_integer(mixed_output_before_filter),
+      .output_10_integer(sd_after_filt_output)
+  );
 
-// Select output based on use_dc_filter
+  // Pipeline register to not load output pins with a lot of changes
 
-logic [10:0] converter_output_internal;
-always_comb begin
-  if(use_dc_filter) begin
-    converter_output_internal = converter_output_internal_filtered;
-  end else begin
-    converter_output_internal = converter_output_internal_unfiltered;
+  always_ff @(posedge CLK_24M) begin
+    if(enable_3M) begin
+      converter_output_internal_filtered <= sd_after_filt_output;
+    end
   end
-end
 
-assign converter_output = converter_output_internal;
+  // --------------------------------------------------------------------------------------------------------------
+
+  // CHOOSE OUTPUT OF MODE 1 or MODE 2. DC filter mode has priority if both enabled
+
+  // --------------------------------------------------------------------------------------------------------------
+
+  logic [10:0] converter_output_internal;
+  always_comb begin
+    if (use_dc_filter) begin
+      converter_output_internal = converter_output_internal_filtered;
+    end else begin
+      converter_output_internal = converter_output_internal_unfiltered;
+    end
+  end
+
+  assign converter_output = converter_output_internal;
 
 endmodule

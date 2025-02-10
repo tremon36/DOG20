@@ -51,15 +51,15 @@ module progressive_mux (
 
     enable_progression = !alpha_sequence[4] && alpha_sequence != 0; // Sequence is not finished (neither up or down)
 
-    if (enable_compute || enable_progression) begin 
-      start_mul = enable_3M;
+    if (enable_compute || enable_progression) begin
+      start_mul = enable_3M; // WARNING WARNING WARNING. Using a clock gating signal as a combinational input... take good care in SDC constraints !!!!
     end else begin
       start_mul = 0;
     end
 
     difference  = k - t;
 
-    if(enable_progression) begin 
+    if(enable_progression) begin
         output_data = mult_output + {t, 4'b0000};
     end else begin
         if(alpha_sequence[4]) begin

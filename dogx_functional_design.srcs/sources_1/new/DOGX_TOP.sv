@@ -47,7 +47,7 @@ module DOGX_TOP (
 
   logic DRESET;
   logic PALPHA;
-  logic DCFILT,
+  logic DCFILT;
 
   programmer DOGX_programmer (
       .reset(reset),
@@ -108,7 +108,5 @@ module DOGX_TOP (
       .use_dc_filter(DCFILT),
       .converter_output(converter_output)
   );
-
-
 
 endmodule

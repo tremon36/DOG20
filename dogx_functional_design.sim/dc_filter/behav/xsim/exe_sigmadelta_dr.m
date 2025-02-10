@@ -20,7 +20,7 @@ lsim = tsim / Ts;
 
 
 %% Run simulation
-ampls = 0.1:0.2:4;
+ampls = 32; %% 32 because itds around the desired number
 j = 1;
 
 for ii = ampls

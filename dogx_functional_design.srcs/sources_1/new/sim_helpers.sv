@@ -25,8 +25,8 @@ module ring_osc_16 #(
 );
 
   real next_delay = 5;
-  
-  function compute_next_delay();
+
+  function static void compute_next_delay();
     next_delay = 1 / (input_voltage * GAIN * F0 + F0) * 1000000000;
   endfunction
 

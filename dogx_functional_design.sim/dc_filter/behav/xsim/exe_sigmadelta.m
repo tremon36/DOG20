@@ -3,13 +3,13 @@
 Fs = 3.072e6;
 Ts = 1/Fs;
 Ft = 1e3;
-sine_ampl = 40;
+sine_ampl = 37; %% Because its around the switching point
 sine_offset = 0;
 
 %% Bit amounts
 
 nbfirstdiff = 9;
-Nb_dec = 23;
+Nb_dec = 22;
 Nb_filt = nbfirstdiff + Nb_dec;
 
 %% Simulation length
@@ -21,7 +21,7 @@ lsim = tsim / Ts;
 
 %% Run simulation
 
-out = sim('sigmadelta_dr.slx');
+out = sim(['sigmadelta_dr.slx']);
 
 %% Compute FFTs
 
@@ -49,7 +49,7 @@ e_final_output = 20 * log10(abs(esph(final_output)));
 
 mean_sd = mean(sd_output);
 mean_filter = mean(filter_output);
-mean_final = mean(e_final_output);
+mean_final = mean(final_output);
 
 
 %% PLOT
@@ -60,12 +60,21 @@ mean_final = mean(e_final_output);
 figure, plot(filter_output);
 title("FILTER OUT");
 
+[coef1,coef2] = butter(3,20e3/(Fs/2));
+
 figure, plot(final_output);
 title("FINAL OUT");
+hold on;
+plot(filter(coef1,coef2,final_output));
+hold off;
 
-[coef1,coef2] = butter(3,20e3/(Fs/2));
-figure, plot(filter(coef1,coef2,filter_output1));
-title("FINAL OUT FILTERED");
+figure, plot(filter(coef1,coef2,4*filter_output1));
+title("FILTER OUT FILTERED");
+hold on;
+plot(filter(coef1,coef2,filter_output));
+hold off;
+
+
 
 figure, plot(sd_output);
 title("SIGMA-DELTA input");
@@ -82,6 +91,8 @@ title("FINAL OUTPUT FFT");
 
 num = [1,-1];
 denom = [1,-(2^16-1)/2^16];
+
+audiowrite("cout.wav",final_output / (max(abs(final_output) + 5)),Fs)
 
 % La diferencia calculada son 22.91 muestras para una frecuencia de
 % entrad de 1 KHz. No parece que esto tenga un efecto notable sobre la

@@ -55,7 +55,6 @@ module datapath_one_clock_v3_tb;
   //  Clock, reset & enable generation
 
   logic CLK_24M;
-  logic CLK_3M;
   logic reset;
   logic enable_3M;
 
